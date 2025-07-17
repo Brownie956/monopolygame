@@ -11,11 +11,16 @@ fun TaskDialog(
     onCompleteTask: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    val description = if (task.taskType == TaskType.FREQUENCY_BASED) {
+        "${task.frequency} times"
+    } else {
+        "for ${task.durationSeconds}s"
+    }
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton( onClick = { onCompleteTask() }) {
-                Text("Complete Task (+£${task.reward})")
+                Text("Complete Task (+${task.reward} points)")
             }
         },
         dismissButton = {
@@ -23,6 +28,6 @@ fun TaskDialog(
                 Text("Dismiss")
             }
         },
-        title = { Text(task.name) },
+        title = { Text("${task.name} $description") },
     )
 }
