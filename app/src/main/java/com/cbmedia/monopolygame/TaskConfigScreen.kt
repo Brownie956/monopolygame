@@ -185,7 +185,7 @@ fun TaskConfigScreen(
         Text("Your Tasks", style = MaterialTheme.typography.titleMedium)
         tasks.forEach { task ->
             val text = if (task.isSpecialTask) {
-                "END TASK: $taskName"
+                "END TASK: ${task.name}"
             } else {
                 if (task.taskType == TaskType.FREQUENCY_BASED) {
                     "${task.name} ${task.frequency} time(s) - Reward: ${task.reward} points"
