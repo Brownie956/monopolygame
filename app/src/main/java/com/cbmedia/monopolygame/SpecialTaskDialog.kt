@@ -32,23 +32,28 @@ fun SpecialTaskDialog(
         text = {
             Column {
                 Text("Task: ${task.name}")
-                Text("Base time limit: ${task.specialTaskTimeLimit ?: 30} seconds")
+                Text("You have ${task.specialTaskTimeLimit ?: 30} seconds")
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text("Buy extra time? Each second costs $costPerSecond point.")
-                Slider(
-                    value = extraTime.toFloat(),
-                    onValueChange = {
-                        val intVal = it.toInt()
-                        if (intVal * costPerSecond <= playerMoney) {
-                            extraTime = intVal
-                        }
-                    },
-                    valueRange = 0f..maxExtraTime.toFloat(),
-                    steps = maxExtraTime - 1
-                )
-                Text("Extra time: $extraTime seconds (cost: ${extraTime * costPerSecond} points)")
+                if (playerMoney > 0) {
+                    Text("Buy extra time? Each second costs $costPerSecond point.")
+                    Slider(
+                        value = extraTime.toFloat(),
+                        onValueChange = {
+                            val intVal = it.toInt()
+                            if (intVal * costPerSecond <= playerMoney) {
+                                extraTime = intVal
+                            }
+                        },
+                        valueRange = 0f..maxExtraTime.toFloat(),
+                        steps = 1
+                    )
+                    Text("Extra time: $extraTime seconds (cost: ${extraTime * costPerSecond} points)")
+                } else {
+                    Text("You don't have any points to spend!")
+                }
+
             }
         },
         confirmButton = {
