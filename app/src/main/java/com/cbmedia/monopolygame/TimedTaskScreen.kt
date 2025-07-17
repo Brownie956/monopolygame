@@ -45,7 +45,7 @@ fun TimedTaskScreen(
     ) {
         Text("Complete the task before time runs out!", style = MaterialTheme.typography.titleLarge)
         Spacer(modifier = Modifier.height(16.dp))
-        Text(task.name, style = MaterialTheme.typography.titleMedium)
+        Text(task.name, style = MaterialTheme.typography.titleLarge)
         Text("Time left: $timeLeft seconds", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(24.dp))
         Button(onClick = onTaskComplete) {
