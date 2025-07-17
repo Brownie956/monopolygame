@@ -7,8 +7,6 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 val Context.dataStore by preferencesDataStore("task_config_store")
@@ -32,12 +30,6 @@ object TaskConfigStore {
         val json = Json.encodeToString(ListSerializer(TaskConfig.serializer()), tasks)
         context.dataStore.edit { prefs ->
             prefs[TASK_LIST_KEY] = json
-        }
-    }
-
-    suspend fun clearTasks(context: Context) {
-        context.dataStore.edit { prefs ->
-            prefs.remove(TASK_LIST_KEY)
         }
     }
 }
