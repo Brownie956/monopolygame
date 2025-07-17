@@ -9,25 +9,48 @@ import androidx.compose.runtime.Composable
 fun TaskDialog(
     task: TaskConfig,
     onCompleteTask: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     val description = if (task.taskType == TaskType.FREQUENCY_BASED) {
         "${task.frequency} times"
-    } else {
+    } else if (task.taskType == TaskType.TIME_BASED) {
         "for ${task.durationSeconds}s"
+    } else {
+        "at ${task.speed}bpm for ${task.durationSeconds} seconds"
     }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton( onClick = { onCompleteTask() }) {
-                Text("Complete Task (+${task.reward} points)")
+
+    if (task.taskType == TaskType.FREQUENCY_BASED) {
+        AlertDialog(
+            onDismissRequest = {},
+            confirmButton = {
+                TextButton( onClick = { onCompleteTask() }) {
+                    Text("Complete Task (+${task.reward} points)")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { onDismiss() }) {
+                    Text("Dismiss")
+                }
+            },
+            title = { Text("${task.name} $description") },
+        )
+    } else {
+        AlertDialog(
+            onDismissRequest = {},
+            confirmButton = {
+                TextButton( onClick = { onCompleteTask() }) {
+                    Text("Complete Task (+${task.reward} points)")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { onDismiss() }) {
+                    Text("Dismiss")
+                }
+            },
+            title = { Text("${task.name} $description") },
+            text = {
+                CountdownTimer(task.durationSeconds ?: 0)
             }
-        },
-        dismissButton = {
-            TextButton(onClick = { onDismiss() }) {
-                Text("Dismiss")
-            }
-        },
-        title = { Text("${task.name} $description") },
-    )
+        )
+    }
 }

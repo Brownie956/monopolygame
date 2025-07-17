@@ -5,7 +5,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 enum class TaskType {
     FREQUENCY_BASED,
-    TIME_BASED
+    TIME_BASED,
+    SPEED_TIME_BASED
 }
 
 @Serializable
@@ -24,6 +25,7 @@ data class TaskConfig(
     val reward: Int,
     val frequency: Int? = null,
     val durationSeconds: Int? = null,
+    val speed: Int? = null,
     val isSpecialTask: Boolean = false,
     val specialTaskTimeLimit: Int? = null
 )

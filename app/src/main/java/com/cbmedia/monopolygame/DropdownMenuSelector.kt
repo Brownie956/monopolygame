@@ -19,7 +19,8 @@ fun DropdownMenuSelector(
     label: String,
     options: List<Any>,
     selected: String,
-    onSelect: (String) -> Unit
+    onSelect: (String) -> Unit,
+    enabled: Boolean = true,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -36,6 +37,7 @@ fun DropdownMenuSelector(
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
             },
             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+            enabled = enabled,
             modifier = Modifier.menuAnchor() // Necessary for positioning dropdown correctly
         )
         ExposedDropdownMenu(

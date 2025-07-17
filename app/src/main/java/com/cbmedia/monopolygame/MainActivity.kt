@@ -36,7 +36,10 @@ fun MonopolyGameApp() {
                 tasks = gameViewModel.tasks,
                 onAddTask = { gameViewModel.addTask(it) },
                 onDeleteAll = { gameViewModel.clearTasks() },
-                onStartGame = { navController.navigate(Screen.Game.route) }
+                onStartGame = {
+                    gameViewModel.shuffleTasks()
+                    navController.navigate(Screen.Game.route)
+                }
             )
         }
         composable(Screen.Game.route) {
@@ -46,7 +49,8 @@ fun MonopolyGameApp() {
                     navController.navigate(Screen.Win.route) {
                         popUpTo(Screen.Game.route) { inclusive = true }
                     }
-                }
+                },
+                onQuitGame = { navController.navigate(Screen.Setup.route) }
             )
         }
         composable(Screen.Win.route) {

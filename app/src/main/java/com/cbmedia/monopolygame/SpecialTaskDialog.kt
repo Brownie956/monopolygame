@@ -27,7 +27,7 @@ fun SpecialTaskDialog(
     val costPerSecond = 1 // cost per second to buy more time
 
     AlertDialog(
-        onDismissRequest = onSkipTask,
+        onDismissRequest = {},
         title = { Text("Special Task!") },
         text = {
             Column {
@@ -47,7 +47,7 @@ fun SpecialTaskDialog(
                             }
                         },
                         valueRange = 0f..maxExtraTime.toFloat(),
-                        steps = 1
+                        steps = playerMoney
                     )
                     Text("Extra time: $extraTime seconds (cost: ${extraTime * costPerSecond} points)")
                 } else {

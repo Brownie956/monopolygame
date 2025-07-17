@@ -7,15 +7,27 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 
 class GameBoardViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _tasks = mutableStateListOf<TaskConfig>()
     val tasks: List<TaskConfig> get() = _tasks
 
+    private val _shuffledTasks = mutableStateListOf<TaskConfig>()
+    val shuffledTasks: List<TaskConfig> get() = _shuffledTasks
+
     private val _playerPosition = mutableIntStateOf(0)
     val playerPosition: State<Int> = _playerPosition
+
+    private val _targetPosition = mutableIntStateOf(0)
+    val targetPosition: State<Int> = _targetPosition
+
+    var diceValue by mutableStateOf(1)
+        private set
 
     private val _currentTask = mutableStateOf<TaskConfig?>(null)
     val currentTask: State<TaskConfig?> = _currentTask
@@ -71,6 +83,47 @@ class GameBoardViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
+    fun animatedRollDice() {
+        val diceRoll = (1..6).random()
+        _targetPosition.intValue = (_playerPosition.intValue + diceRoll) % tasks.size
+        val landedTask = shuffledTasks.getOrNull(_targetPosition.intValue)
+        if (landedTask != null) {
+            _currentTask.value = landedTask
+            setShowTaskDialog(true)
+        }
+    }
+
+    fun animateDiceRoll(onRollComplete: () -> Unit = {}) {
+        viewModelScope.launch {
+            val rollDuration = 800L
+            val rollSteps = 12
+            repeat(rollSteps) {
+                diceValue = (1..6).random()
+                delay(rollDuration / rollSteps)
+            }
+
+            // Final roll value
+            val finalRoll = (1..6).random()
+            diceValue = finalRoll
+
+
+
+            // Move player
+            _playerPosition.intValue = (_playerPosition.intValue + finalRoll) % tasks.size
+
+            // Handle special task
+            val landedTask = shuffledTasks.getOrNull(_playerPosition.intValue)
+            if (landedTask != null) {
+                _currentTask.value = landedTask
+                setShowTaskDialog(true)
+            }
+
+
+
+            onRollComplete()
+        }
+    }
+
     fun completeTask() {
         _currentTask.value?.let {
             _playerMoney.intValue += it.reward
@@ -103,5 +156,10 @@ class GameBoardViewModel(application: Application) : AndroidViewModel(applicatio
     fun spendMoney(amount: Int) {
         _playerMoney.intValue = (_playerMoney.intValue - amount).coerceAtLeast(0)
         _extraTimePurchased.intValue = amount
+    }
+
+    fun shuffleTasks() {
+        _shuffledTasks.clear()
+        _shuffledTasks.addAll(tasks.shuffled())
     }
 }

@@ -1,5 +1,8 @@
 package com.cbmedia.monopolygame
 
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,10 +36,18 @@ import kotlin.math.ceil
 @Composable
 fun GameBoardScreen(
     viewModel: GameBoardViewModel,
-    onWin: () -> Unit
+    onWin: () -> Unit,
+    onQuitGame: () -> Unit
 ) {
-    val tasks = viewModel.tasks
+    val tasks = viewModel.shuffledTasks
     val playerPos by viewModel.playerPosition
+    val targetPosition by viewModel.targetPosition
+    val animatedPosition by animateIntAsState(
+        targetValue = targetPosition,
+        animationSpec = tween(durationMillis = 800, easing = LinearOutSlowInEasing),
+        label = "Animated Player Position"
+    )
+    val diceValue = viewModel.diceValue
     val playerMoney by viewModel.playerMoney
     val currentTask = viewModel.currentTask.value
     val extraTimePurchased by viewModel.extraTimePurchased
@@ -62,11 +73,19 @@ fun GameBoardScreen(
 
             Spacer(Modifier.height(32.dp))
 
-            Button(onClick = {
-                viewModel.rollDice()
-            }) {
-                Text("Roll Dice")
+            Row {
+                DiceDisplay(
+                    diceValue = diceValue,
+                    onRoll = { viewModel.animateDiceRoll() }
+                )
+                Button(onClick = {
+                    viewModel.resetGame()
+                    onQuitGame()
+                }) {
+                    Text("End the game")
+                }
             }
+
         }
     }
 
@@ -235,8 +254,10 @@ fun TaskTile(task: TaskConfig, isPlayerHere: Boolean) {
                 )
                 val description = if (task.taskType == TaskType.FREQUENCY_BASED) {
                     "${task.frequency} times"
-                } else {
+                } else if (task.taskType == TaskType.TIME_BASED) {
                     "for ${task.durationSeconds}s"
+                } else {
+                    "at ${task.speed}bpm for ${task.durationSeconds} seconds"
                 }
                 if (!task.isSpecialTask) {
                     Text(
