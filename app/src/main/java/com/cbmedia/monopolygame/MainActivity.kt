@@ -6,6 +6,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -29,17 +31,22 @@ fun MonopolyGameApp() {
     val gameViewModel: GameBoardViewModel = viewModel(
         factory = GameBoardViewModelFactory(context.applicationContext as Application)
     )
+    val taskLists by gameViewModel.taskLists.collectAsState()
 
     NavHost(navController = navController, startDestination = Screen.Setup.route) {
         composable(Screen.Setup.route) {
             TaskConfigScreen(
                 tasks = gameViewModel.tasks,
+                taskLists = taskLists,
                 onAddTask = { gameViewModel.addTask(it) },
                 onDeleteAll = { gameViewModel.clearTasks() },
                 onStartGame = {
                     gameViewModel.shuffleTasks()
                     navController.navigate(Screen.Game.route)
-                }
+                },
+                onSaveTaskList = { gameViewModel.saveCurrentTaskList(it) },
+                onLoadTaskList = { gameViewModel.loadTaskListByName(it) },
+                onDeleteTaskList = { gameViewModel.deleteTaskList(it) }
             )
         }
         composable(Screen.Game.route) {

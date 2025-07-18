@@ -11,11 +11,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 class GameBoardViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _tasks = mutableStateListOf<TaskConfig>()
     val tasks: List<TaskConfig> get() = _tasks
+
+    private val _taskLists = mutableStateListOf<NamedTaskLists>()
+    val taskLists: StateFlow<List<NamedTaskLists>> = TaskConfigStore
+        .getNamedTaskLists(application)
+        .map { listOf(it) } // You’re wrapping in a list — could simplify later
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     private val _shuffledTasks = mutableStateListOf<TaskConfig>()
     val shuffledTasks: List<TaskConfig> get() = _shuffledTasks
@@ -72,6 +83,32 @@ class GameBoardViewModel(application: Application) : AndroidViewModel(applicatio
             TaskConfigStore.saveTasks(getApplication(), _tasks)
         }
     }
+
+    fun saveCurrentTaskList(name: String) {
+        val context = getApplication<Application>().applicationContext
+        viewModelScope.launch {
+            TaskConfigStore.saveNamedTaskList(context, name, tasks)
+        }
+    }
+
+    fun loadTaskListByName(name: String) {
+        val context = getApplication<Application>().applicationContext
+        viewModelScope.launch {
+            TaskConfigStore.getNamedTaskLists(context).firstOrNull()?.lists?.get(name)?.let {
+                _tasks.addAll(it)
+            }
+        }
+    }
+
+    fun deleteTaskList(name: String) {
+        viewModelScope.launch {
+            TaskConfigStore.deleteNamedTaskList(getApplication(), name)
+        }
+    }
+
+    val allTaskListNames: StateFlow<List<String>> = TaskConfigStore.getNamedTaskLists(getApplication())
+        .map { it.lists.keys.toList() }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     fun rollDice() {
         val diceRoll = (1..6).random()

@@ -29,3 +29,9 @@ data class TaskConfig(
     val isSpecialTask: Boolean = false,
     val specialTaskTimeLimit: Int? = null
 )
+
+@Serializable
+data class NamedTaskLists(
+    val lists: Map<String, List<TaskConfig>> = emptyMap()
+)
+

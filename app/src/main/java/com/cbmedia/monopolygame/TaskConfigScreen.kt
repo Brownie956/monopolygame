@@ -4,12 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -26,16 +24,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlin.String
 
 @Composable
 fun TaskConfigScreen(
     tasks: List<TaskConfig>,
+    taskLists: List<NamedTaskLists>,
     onAddTask: (TaskConfig) -> Unit,
     onDeleteAll: () -> Unit,
-    onStartGame: () -> Unit
+    onStartGame: () -> Unit,
+    onSaveTaskList: (String) -> Unit,
+    onLoadTaskList: (String) -> Unit,
+    onDeleteTaskList: (String) -> Unit
 ) {
     var taskName by remember { mutableStateOf("") }
     var taskType by remember { mutableStateOf(TaskType.FREQUENCY_BASED) }
@@ -45,10 +47,11 @@ fun TaskConfigScreen(
     var difficulty by remember { mutableStateOf(Difficulty.MEDIUM) }
     var isSpecialTask by remember { mutableStateOf(false) }
     var isRandomAmount by remember { mutableStateOf(false) }
+    var listName by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
-            .padding(16.dp)
+            .padding(start = 16.dp, top = 32.dp, end = 16.dp, bottom = 16.dp)
             .verticalScroll(rememberScrollState())
             .background(Color.White)
     ) {
@@ -68,7 +71,7 @@ fun TaskConfigScreen(
             label = { Text("Task") },
         )
 
-        Row {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             if (taskType == TaskType.FREQUENCY_BASED) {
                 NumericalInput(
                     value = frequency,
@@ -180,6 +183,63 @@ fun TaskConfigScreen(
             Text("Add Task")
         }
 
+        OutlinedTextField(
+            value = listName,
+            onValueChange = { listName = it },
+            label = { Text("Save List As...") },
+        )
+
+        val existingListNames = taskLists.flatMap { it.lists.keys }
+        val nameAlreadyExists = listName.isNotBlank() && existingListNames.contains(listName)
+
+        Row (verticalAlignment = Alignment.CenterVertically) {
+            Button(
+                onClick = {
+                    onSaveTaskList(listName)
+                    listName = ""
+                },
+                enabled = listName.isNotBlank() && !nameAlreadyExists
+            ) {
+                Text("Save Current List")
+            }
+            if (nameAlreadyExists) {
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = "A list with this name already exists.",
+                    color = Color.Red,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+
+
+        Text("Your Task lists", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 8.dp))
+        Column {
+            taskLists.forEach { namedTaskList ->
+                namedTaskList.lists.keys.forEach { name ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            "- $name",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+                        )
+                        Button(onClick = { onLoadTaskList(name) }) {
+                            Text("Load")
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        Button(
+                            onClick = { onDeleteTaskList(name) },
+                            colors = ButtonDefaults.buttonColors(Color.Red)
+                        ) {
+                            Text("Delete")
+                        }
+
+                    }
+                }
+            }
+        }
+
+
         Spacer(Modifier.height(16.dp))
 
         Text("Your Tasks", style = MaterialTheme.typography.titleMedium)
@@ -228,10 +288,20 @@ fun PreviewTaskConfigScreen() {
         )
     }
 
+    val taskLists = List(1) {
+        NamedTaskLists(
+            lists = mapOf<String, List<TaskConfig>>(Pair("list 1", dummyTasks))
+        )
+    }
+
     TaskConfigScreen(
         tasks = dummyTasks,
         onAddTask = {},
         onDeleteAll = {},
-        onStartGame = {}
+        onStartGame = {},
+        onSaveTaskList = {},
+        onLoadTaskList = {},
+        onDeleteTaskList = {},
+        taskLists = taskLists
     )
 }
